@@ -1,0 +1,22 @@
+[package]
+name = "recorder"
+version = "0.1.0"
+authors = ["__JM_Joy__ <918734043@qq.com>"]
+edition = "2018"
+description = "竖笛相关工具。"
+repository = "https://github.com/jmjoy/recorder"
+license-file = "LICENSE"
+readme = "README.md"
+keywords = [
+    "recorder",
+]
+exclude = [
+    ".gitignore",
+    ".travis.yml",
+    "rustfmt.toml",
+    "config.toml",
+    "config.example.toml",
+    "config.test.toml",
+]
+
+[dependencies]
