@@ -82,6 +82,16 @@ pub mod parser {
         Whitespace,
     }
 
+    impl Display for Token {
+        fn fmt(&self, f: &mut Formatter) -> FmtResult {
+            match self {
+                Token::Notation(n) => n.fmt(f),
+                Token::Raw(s) => s.fmt(f),
+                Token::Whitespace => " ".fmt(f),
+            }
+        }
+    }
+
     /// 简单数字谱解析器
     #[derive(Debug, PartialEq)]
     pub struct Parser {
@@ -220,6 +230,9 @@ pub mod parser {
             Ok(())
         }
 
+        pub fn lines(self) -> Vec<Vec<Token>> {
+            self.inner
+        }
     }
 
     #[cfg(test)]

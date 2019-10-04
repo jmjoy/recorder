@@ -1,6 +1,9 @@
 use crate::notation::{self, NOTATIONS_MAP};
 use num::FromPrimitive;
 use num_derive::FromPrimitive;
+use std::fmt::{Display, Formatter, Result as FmtResult};
+use std::error::Error;
+use crate::notation::parser::{Parser, ParseError, Token};
 
 /// 音调：竖笛的两个八度
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd, FromPrimitive)]
@@ -53,6 +56,26 @@ pub enum FingerTone {
     B,
 }
 
+impl FingerTone {
+    pub fn from_str(s: &str) -> Option<Self> {
+        match s {
+            "#a" => Some(FingerTone::SA),
+            "a" => Some(FingerTone::A),
+            "#g" => Some(FingerTone::SG),
+            "g" => Some(FingerTone::G),
+            "#f" => Some(FingerTone::SF),
+            "f" => Some(FingerTone::F),
+            "e" => Some(FingerTone::E),
+            "#d" => Some(FingerTone::SD),
+            "d" => Some(FingerTone::D),
+            "#c" => Some(FingerTone::SC),
+            "c" => Some(FingerTone::C),
+            "b" => Some(FingerTone::B),
+            _ => None
+        }
+    }
+}
+
 impl Tone {
     /// 返回数字符号
     pub fn to_notation(self, finger_tone: FingerTone) -> &'static str {
@@ -67,6 +90,56 @@ impl Tone {
             FromPrimitive::from_usize(index)
         })
     }
+}
+
+/// 转换错误
+#[derive(Debug, PartialEq)]
+pub enum ConvertError {
+    Parse(ParseError),
+    NotFound(String),
+}
+
+impl Display for ConvertError {
+    fn fmt(&self, f: &mut Formatter) -> FmtResult {
+        match self {
+            ConvertError::Parse(e) => e.fmt(f),
+            ConvertError::NotFound(s) => s.fmt(f),
+        }
+    }
+}
+
+impl From<ParseError> for ConvertError {
+    fn from(e: ParseError) -> ConvertError {
+        Self::Parse(e)
+    }
+}
+
+impl Error for ConvertError {}
+
+/// 转换简谱
+pub fn convert_tone(content: &str, from: FingerTone, to: FingerTone) -> Result<String, ConvertError> {
+    let parser = Parser::from_str(content)?;
+    let mut lines = Vec::new();
+    for line in parser.lines() {
+        let mut new_line = Vec::new();
+        for token in line {
+            let s = format!("{}", token);
+            let s = match token {
+                Token::Notation(n) => {
+                    let tone = Tone::notation_to_tone(&s, from)
+                        .ok_or_else(|| ConvertError::NotFound("转换失败：出现未知音符".to_owned()))?;
+                    tone.to_notation(to).to_owned()
+                },
+                t => s,
+            };
+            new_line.push(s);
+        }
+        lines.push(new_line);
+    }
+
+    Ok(lines.iter().map(|line| {
+        line.join("")
+    }).collect::<Vec<_>>().join("\n"))
 }
 
 #[cfg(test)]
