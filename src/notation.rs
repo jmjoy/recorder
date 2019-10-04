@@ -1,11 +1,25 @@
+use std::collections::HashMap;
+use lazy_static::lazy_static;
+use std::fmt::{Display, Formatter, Result as FmtResult};
+
 /// 音符列表
-pub const NOTATIONS: [&str; 46] = [
+pub const NOTATIONS: [&'static str; 46] = [
     "((5))", "((#5))", "((6))", "((#6))", "((7))",
     "(1)", "(#1)", "(2)", "(#2)", "(3)", "(4)", "(#4)", "(5)", "(#5)", "(6)", "(#6)", "(7)",
     "1", "#1", "2", "#2", "3", "4", "#4", "5", "#5", "6", "#6", "7",
     "[1]", "[#1]", "[2]", "[#2]", "[3]", "[4]", "[#4]", "[5]", "[#5]", "[6]", "[#6]", "[7]",
     "[[1]]", "[[#1]]", "[[2]]", "[[#2]]", "[[3]]",
 ];
+
+lazy_static! {
+    pub static ref NOTATIONS_MAP: HashMap<&'static str, usize> = {
+        let mut map = HashMap::new();
+        NOTATIONS.iter().enumerate().for_each(|(index, &item)| {
+            map.insert(item, index);
+        });
+        map
+    };
+}
 
 /// C调一号位坐标
 pub const TONE_C_START: usize = 17;
@@ -25,6 +39,19 @@ pub struct Notation {
     r#type: NotationType,
     number: u8,
     is_sharp: bool,
+}
+
+impl Display for Notation {
+    fn fmt(&self, f: &mut Formatter) -> FmtResult {
+        let sharp = if self.is_sharp { "#" } else { "" };
+        match self.r#type {
+            NotationType::LLow => format!("(({}{}))", sharp, self.number),
+            NotationType::Low => format!("({}{})", sharp, self.number),
+            NotationType::Normal => format!("{}{}", sharp, self.number),
+            NotationType::High => format!("[{}{}]", sharp, self.number),
+            NotationType::HHigh => format!("[[{}{}]]", sharp, self.number),
+        }.fmt(f)
+    }
 }
 
 pub mod parser {
@@ -50,7 +77,6 @@ pub mod parser {
 
     #[derive(Debug, PartialEq)]
     pub enum Token {
-        Tone(Tone),
         Notation(Notation),
         Raw(String),
         Whitespace,
@@ -193,6 +219,7 @@ pub mod parser {
 
             Ok(())
         }
+
     }
 
     #[cfg(test)]
@@ -200,7 +227,7 @@ pub mod parser {
         use super::*;
 
         #[test]
-        fn test_parse() {
+        fn test_parse_from_str() {
             assert_eq!(Parser::from_str("1"), Ok(Parser { inner: vec![vec![Token::Notation(Notation {
                 r#type: NotationType::Normal,
                 number: 1,
