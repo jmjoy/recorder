@@ -9,7 +9,31 @@ use crate::notation::parser::{Parser, ParseError, Token};
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd, FromPrimitive)]
 #[repr(usize)]
 pub enum Tone {
-    C = 1,
+    LLC = 1,
+    LLSC,
+    LLD,
+    LLSD,
+    LLE,
+    LLF,
+    LLSF,
+    LLG,
+    LLSG,
+    LLA,
+    LLSA,
+    LLB,
+    LC,
+    LSC,
+    LD,
+    LSD,
+    LE,
+    LF,
+    LSF,
+    LG,
+    LSG,
+    LA,
+    LSA,
+    LB,
+    C,
     SC,
     D,
     SD,
@@ -36,6 +60,15 @@ pub enum Tone {
     HHC,
     HHSC,
     HHD,
+    HHSD,
+    HHE,
+    HHF,
+    HHSF,
+    HHG,
+    HHSG,
+    HHA,
+    HHSA,
+    HHB,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
@@ -86,7 +119,7 @@ impl Tone {
     /// 数字符号返回Tone
     pub fn notation_to_tone(notation: &str, finger_tone: FingerTone) -> Option<Tone> {
         NOTATIONS_MAP.get(notation).and_then(|index| {
-            let index = index + 1 + FingerTone::C as usize - finger_tone as usize - notation::TONE_C_START;
+            let index = index + FingerTone::C as usize + Tone::C as usize - finger_tone as usize - notation::TONE_C_START;
             FromPrimitive::from_usize(index)
         })
     }
@@ -167,9 +200,10 @@ mod test {
         assert_eq!(Tone::notation_to_tone("#1", FingerTone::B), Some(Tone::C));
         assert_eq!(Tone::notation_to_tone("[[#2]]", FingerTone::B), Some(Tone::HHD));
         assert_eq!(Tone::notation_to_tone("[1]", FingerTone::G), Some(Tone::HG));
-        assert_eq!(Tone::notation_to_tone("(7)", FingerTone::C), None);
+        assert_eq!(Tone::notation_to_tone("(5)", FingerTone::C), Some(Tone::LG));
+        assert_eq!(Tone::notation_to_tone("(7)", FingerTone::C), Some(Tone::LB));
         assert_eq!(Tone::notation_to_tone("(#7)", FingerTone::C), None);
-        assert_eq!(Tone::notation_to_tone("[[3]]", FingerTone::B), None);
+        assert_eq!(Tone::notation_to_tone("[[3]]", FingerTone::B), Some(Tone::HHSD));
     }
 }
 

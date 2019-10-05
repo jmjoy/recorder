@@ -17,7 +17,7 @@ struct Opt {
     to: String,
 }
 
-fn main() -> Result<(), Box<Error>> {
+fn main() -> Result<(), Box<dyn Error>> {
     let opt = Opt::from_args();
     let from = FingerTone::from_str(&opt.from).ok_or("from参数有误")?;
     let to = FingerTone::from_str(&opt.to).ok_or("to参数有误")?;
@@ -27,7 +27,7 @@ fn main() -> Result<(), Box<Error>> {
     let input = String::from_utf8(input)?;
 
     let content = convert_tone(&input, from, to)?;
-    print!("{}", input);
+    print!("{}", content);
 
     Ok(())
 }
