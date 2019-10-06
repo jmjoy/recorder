@@ -1,6 +1,7 @@
 use std::fmt::{Display, Formatter, Result as FmtResult};
 
 /// 洞
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Hole {
     /// 全开
     Open,
@@ -10,7 +11,18 @@ pub enum Hole {
     Close,
 }
 
+impl Display for Hole {
+    fn fmt(&self, f: &mut Formatter) -> FmtResult {
+        match self {
+            Hole::Open => "○",
+            Hole::Half => "◐",
+            Hole::Close => "●",
+        }.fmt(f)
+    }
+}
+
 /// 指法
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Fingering {
     /// 左手拇指
     left_0: Hole,
@@ -48,7 +60,53 @@ impl Fingering {
 
 impl Display for Fingering {
     fn fmt(&self, f: &mut Formatter) -> FmtResult {
-        unimplemented!()
+        format!(r#"{}
+-
+{}
+{}
+{}
+-
+{}
+{}
+{}
+{}
+"#, self.left_0, self.left_1, self.left_2, self.left_3, self.right_4, self.right_5, self.right_6, self.right_7).fmt(f)
     }
 }
 
+#[cfg(test)]
+mod test {
+    use super::*;
+    use crate::tone::Tone;
+
+    #[test]
+    fn test_fingering() {
+        assert_eq!(Tone::C.to_finger().map(|f| f.to_string()), Some("●\n-\n●\n●\n●\n-\n●\n●\n●\n●\n".to_owned()));
+        assert_eq!(Tone::SC.to_finger().map(|f| f.to_string()), Some("●\n-\n●\n●\n●\n-\n●\n●\n●\n◐\n".to_owned()));
+        assert_eq!(Tone::D.to_finger().map(|f| f.to_string()), Some("●\n-\n●\n●\n●\n-\n●\n●\n●\n○\n".to_owned()));
+        assert_eq!(Tone::SD.to_finger().map(|f| f.to_string()), Some("●\n-\n●\n●\n●\n-\n●\n●\n◐\n○\n".to_owned()));
+        assert_eq!(Tone::E.to_finger().map(|f| f.to_string()), Some("●\n-\n●\n●\n●\n-\n●\n●\n○\n○\n".to_owned()));
+        assert_eq!(Tone::F.to_finger().map(|f| f.to_string()), Some("●\n-\n●\n●\n●\n-\n●\n○\n●\n●\n".to_owned()));
+        assert_eq!(Tone::SF.to_finger().map(|f| f.to_string()), Some("●\n-\n●\n●\n●\n-\n○\n●\n●\n○\n".to_owned()));
+        assert_eq!(Tone::G.to_finger().map(|f| f.to_string()), Some("●\n-\n●\n●\n●\n-\n○\n○\n○\n○\n".to_owned()));
+        assert_eq!(Tone::SG.to_finger().map(|f| f.to_string()), Some("●\n-\n●\n●\n○\n-\n●\n●\n◐\n○\n".to_owned()));
+        assert_eq!(Tone::A.to_finger().map(|f| f.to_string()), Some("●\n-\n●\n●\n○\n-\n○\n○\n○\n○\n".to_owned()));
+        assert_eq!(Tone::B.to_finger().map(|f| f.to_string()), Some("●\n-\n●\n○\n○\n-\n○\n○\n○\n○\n".to_owned()));
+        assert_eq!(Tone::HC.to_finger().map(|f| f.to_string()), Some("●\n-\n○\n●\n○\n-\n○\n○\n○\n○\n".to_owned()));
+        assert_eq!(Tone::HSC.to_finger().map(|f| f.to_string()), Some("○\n-\n●\n●\n○\n-\n○\n○\n○\n○\n".to_owned()));
+        assert_eq!(Tone::HD.to_finger().map(|f| f.to_string()), Some("○\n-\n○\n●\n○\n-\n○\n○\n○\n○\n".to_owned()));
+        assert_eq!(Tone::HSD.to_finger().map(|f| f.to_string()), Some("○\n-\n○\n●\n●\n-\n●\n●\n●\n○\n".to_owned()));
+        assert_eq!(Tone::HE.to_finger().map(|f| f.to_string()), Some("◐\n-\n●\n●\n●\n-\n●\n●\n○\n○\n".to_owned()));
+        assert_eq!(Tone::HF.to_finger().map(|f| f.to_string()), Some("◐\n-\n●\n●\n●\n-\n●\n○\n●\n○\n".to_owned()));
+        assert_eq!(Tone::HSF.to_finger().map(|f| f.to_string()), Some("◐\n-\n●\n●\n●\n-\n○\n●\n○\n○\n".to_owned()));
+        assert_eq!(Tone::HG.to_finger().map(|f| f.to_string()), Some("◐\n-\n●\n●\n●\n-\n○\n○\n○\n○\n".to_owned()));
+        assert_eq!(Tone::HSG.to_finger().map(|f| f.to_string()), Some("◐\n-\n●\n●\n○\n-\n●\n○\n○\n○\n".to_owned()));
+        assert_eq!(Tone::HA.to_finger().map(|f| f.to_string()), Some("◐\n-\n●\n●\n○\n-\n○\n○\n○\n○\n".to_owned()));
+        assert_eq!(Tone::HSA.to_finger().map(|f| f.to_string()), Some("◐\n-\n●\n●\n○\n-\n●\n●\n●\n○\n".to_owned()));
+        assert_eq!(Tone::HB.to_finger().map(|f| f.to_string()), Some("◐\n-\n●\n●\n○\n-\n●\n●\n○\n○\n".to_owned()));
+        assert_eq!(Tone::HB.to_finger().map(|f| f.to_string()), Some("◐\n-\n●\n●\n○\n-\n●\n●\n○\n○\n".to_owned()));
+        assert_eq!(Tone::HHC.to_finger().map(|f| f.to_string()), Some("◐\n-\n●\n○\n○\n-\n●\n●\n○\n○\n".to_owned()));
+        assert_eq!(Tone::HHSC.to_finger().map(|f| f.to_string()), Some("◐\n-\n●\n◐\n●\n-\n●\n○\n●\n●\n".to_owned()));
+        assert_eq!(Tone::HHD.to_finger().map(|f| f.to_string()), Some("◐\n-\n●\n○\n●\n-\n●\n○\n●\n◐\n".to_owned()));
+    }
+}

@@ -74,7 +74,7 @@ pub enum Tone {
 
 impl Tone {
     /// 英式竖笛指法
-    fn to_finger(self) -> Option<Fingering> {
+    pub fn to_finger(self) -> Option<Fingering> {
         match self {
             Tone::C => Some(Fingering::new(
                 Hole::Close,
@@ -276,6 +276,16 @@ impl Tone {
                 Hole::Open,
                 Hole::Open,
             )),
+            Tone::HSG => Some(Fingering::new(
+                Hole::Half,
+                Hole::Close,
+                Hole::Close,
+                Hole::Open,
+                Hole::Close,
+                Hole::Open,
+                Hole::Open,
+                Hole::Open,
+            )),
             Tone::HA => Some(Fingering::new(
                 Hole::Half,
                 Hole::Close,
@@ -433,11 +443,63 @@ pub fn convert_tone(content: &str, from: FingerTone, to: FingerTone) -> Result<S
                         .ok_or_else(|| ConvertError::NotFound("转换失败：出现未知音符".to_owned()))?;
                     tone.to_notation(to).to_owned()
                 },
-                t => s,
+                t => s.to_owned(),
             };
             new_line.push(s);
         }
         lines.push(new_line);
+    }
+
+    Ok(lines.iter().map(|line| {
+        line.join("")
+    }).collect::<Vec<_>>().join("\n"))
+}
+
+/// 竖笛数字简谱可视化
+pub fn visualize_tone(content: &str, finger_tone: FingerTone) -> Result<String, ConvertError> {
+    let parser = Parser::from_str(content)?;
+    let mut lines = Vec::new();
+
+    for line in parser.lines() {
+        if line.is_empty() {
+            continue;
+        }
+
+        let mut fingers_list = vec![Vec::new(); 11];
+
+        for token in &line {
+            let finger: String;
+            let s = token.to_string();
+            let fingers = match token {
+                Token::Notation(n) => {
+                    let tone = Tone::notation_to_tone(&s, finger_tone)
+                        .ok_or_else(|| ConvertError::NotFound(format!("出现未知音符：{}", &s)))?;
+                    finger = tone.to_finger()
+                        .ok_or_else(|| ConvertError::NotFound(format!("这个音调竖笛吹不了的音符：{}", &s)))?
+                        .to_string()
+                        .trim()
+                        .to_string();
+                    let finger = finger.split('\n');
+                    finger.collect::<Vec<_>>()
+                },
+                Token::Whitespace => vec!["     "; 11],
+                _ => vec![&*s; 11],
+            };
+
+            if !fingers.is_empty() {
+                for (index, item) in fingers.iter().enumerate() {
+                    fingers_list[index].push(item.to_string());
+                }
+            }
+        }
+
+        for fingers in fingers_list {
+            lines.push(fingers);
+        }
+
+        lines.push(line.iter().map(|s| s.to_string()).collect::<Vec<_>>());
+
+        lines.push(Vec::new());
     }
 
     Ok(lines.iter().map(|line| {
