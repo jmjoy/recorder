@@ -1,5 +1,7 @@
 # Recorder
 
+[![Build Status](https://travis-ci.org/jmjoy/recorder.svg?branch=master)](https://travis-ci.org/jmjoy/recorder)
+
 竖笛相关工具。
 
 - tone-converter
